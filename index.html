@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Uploading Tutorial</title>
+</head>
+
+<body>
+
+    <div style="border: 1px solid red; padding: 1rem; margin-bottom: 2rem;">
+        <h2 style="font-size: 1rem;">Couple of things you've to do related to CORS error</h2>
+        <ul style="font-size: .8rem;">
+            <li>If you're serving the frontend application from a different origin, make sure you're sending proper header from the backend express application. <a href="https://expressjs.com/en/resources/middleware/cors.html" target="_blank">You can use this</a></li>
+            <li>For S3 also you've to turn on CORS. <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/ManageCorsUsing.html" target="_blank" rel="noopener noreferrer">Refer this</a></li>
+        </ul>
+    </div>
+
+    <form>
+        <label for="file"></label>
+        <input type="file" name="file" id="file">
+        <input type="submit" value="Upload File">
+    </form>
+</body>
+
+<script>
+    const endpoint = "http://localhost:3000/file-upload"
+    const form = document.querySelector('form')
+    const fileInput = document.querySelector('#file')
+    form.addEventListener('submit', uploadFile)
+
+    async function uploadFile(e) {
+        e.preventDefault()
+
+        const file = fileInput.files[0]
+        const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                fileName: file.name
+            })
+        })
+
+        const { url } = await response.json()
+
+        file.arrayBuffer().then(async buff => {
+            const blobData = new Blob([buff], { type: file.type });
+            await fetch(url, {
+                method: 'PUT',
+                body: blobData
+            })
+        })
+    }
+</script>
+
+</html>
